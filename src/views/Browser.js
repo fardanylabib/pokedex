@@ -24,10 +24,10 @@ const PokemonFilter = (props) =>(
         {
             ({loading,error,data}) => {
                 if(loading){
-                    return <p>Loading...</p>
+                    return <p className = 'text-center'>Loading Filters...</p>
                 }
                 if(error){
-                    return <p>Error.. :(</p>
+                    return <p className = 'text-center'>Error.. :(</p>
                 }
                 var list=[];
                 data.pokemons.map((pokemon)=>{
@@ -48,7 +48,7 @@ const PokemonBrowser = (props) => {
         return (
             <>
                 <Cards content = {props.pokemonList} />
-                <p>No more monsters...</p>
+                <p className = 'text-center'>No more monsters...</p>
             </>
         )
     }
@@ -66,12 +66,12 @@ const PokemonBrowser = (props) => {
                         return(
                             <>
                                 <Cards content = {props.pokemonList} />
-                                <p>Loading...</p>
+                                <p className = 'text-center'>Loading Monsters...</p>
                             </>
                         )
                     }
                     if(error){
-                        return <p>Error.. :(</p>
+                        return <p className = 'text-center'>Error.. :(</p>
                     }
                     let filteredData = [];
                     if(props.filter !== null && props.filter.length > 0){
@@ -110,7 +110,6 @@ class Browser extends React.Component{
         super(props);
         this.state = {
             //application state
-            filtersUpdated:false,
             pokemonsUpdated:false,
             isBottom:false,
 
@@ -141,22 +140,9 @@ class Browser extends React.Component{
         this.setState({pokemonList:newList, pokemonsUpdated:true});
     }
 
-    componentDidMount(){
-
-    }
-
-    componentDidUpdate(){
-
-    }
-
     render(){
-        const {filtersLoaded,pokemonsLoaded,isBottom} = this.state;
         return(
             <div>
-                <PokemonFilter 
-                    filter = {this.state.filter}
-                    handleFilter = {this.handleFilter}
-                />
                 <Box my={2}>
                     <InfiniteScroll
                         pageStart={0}
@@ -172,6 +158,10 @@ class Browser extends React.Component{
                         /> 
                     </InfiniteScroll>                 
                 </Box>
+                <PokemonFilter 
+                    filter = {this.state.filter}
+                    handleFilter = {this.handleFilter}
+                />
                 <BottomScrollListener onBottom={() => this.setState({isBottom:true})}/>
             </div>
         )
