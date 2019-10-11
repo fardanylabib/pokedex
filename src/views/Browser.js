@@ -112,10 +112,8 @@ class Browser extends React.Component{
     }
 
     handleFilter = (filterSet) => {
-        if(filter === filterSet){
-            return;
-        }
         filter = filterSet;
+        console.log('filter = '+filter);
         pokemonList = [];
         if(filter.length == 0){
             pokemonCount = INITIAL_COUNT;
