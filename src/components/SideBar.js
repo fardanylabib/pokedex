@@ -7,6 +7,7 @@ import Fab from '@material-ui/core/Fab';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import Button from '@material-ui/core/Button';
+import FormGroup from '@material-ui/core/FormGroup';
 
 const useStyles = makeStyles({
   list: {
@@ -26,13 +27,25 @@ function FilterSideBar(props) {
   const classes = useStyles();
   const [state, setState] = React.useState({
     isOpen: false,
+    filter:[],
   });
+
+  const handleCheck = event => {
+    var currentFilter = state.filter;
+    const indexOfType = currentFilter.indexOf(event.target.value);
+    if(indexOfType >= 0){
+      currentFilter.splice(indexOfType,1);
+    }else{
+      currentFilter = [...currentFilter,event.target.value];
+    }
+    console.log(currentFilter);
+    setState({...state, filter: currentFilter});
+  };
 
   const toggleDrawer = (open) => event => {
     if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
       return;
     }
-    
     setState({ ...state, isOpen: open });
   };
 
@@ -42,48 +55,33 @@ function FilterSideBar(props) {
       role='presentation'
     >
       <h2 className = {classes.sideContent}>Filter by Type</h2>
-      <Button className = {classes.sideContent} variant='contained' color='primary'>
+      <Button className = {classes.sideContent} variant='contained' color='primary'
+              onClick   = {()=>props.handleFilter(state.filter)}
+      >
         <span className='text'>Apply</span>
       </Button>
-      <Button className = {classes.sideContent} variant='contained' color='secondary'>
-        <span className='text'>Reset</span>
+      <Button className = {classes.sideContent} variant='contained' color='secondary'
+              onClick   = {()=>setState({...state,filter:[]})}
+      >
+        <span className='text'>Reset </span>
       </Button>
       <br/><br/>
       <Divider />
         <div className = {classes.sideContent}>
-          <FormControlLabel
-            control={
-            <Checkbox
-                checked={true}
-                // onChange={}
-                value="checkedB"
-                color="primary"
-            />
-            }
-            label={<span className='text'>All</span>}
-          />
-        <br/>
-        </div>
-        {
-          types !== null || types !== undefined ?
-          types.map((type)=>(
-            <div key= {type} className = {classes.sideContent}>
-              <FormControlLabel
-                control={
-                <Checkbox
-                    checked={false}
-                    // onChange={}
-                    value="checkedB"
-                    color="primary"
+          <FormGroup aria-label="type-filter" name="types" value={state.filter} onChange={handleCheck}>        
+            {
+              types !== null || types !== undefined ?
+              types.map((type)=>(
+                <FormControlLabel
+                  key = {type}
+                  value={type}
+                  control={<Checkbox color="primary" checked={state.filter.indexOf(type)>=0}/>}
+                  label={<span className='text'>{type}</span>}
                 />
-                }
-                label={<span className='text'>{type}</span>}
-              />
-              <br/>
-            </div>
-            // <p className = {classes.sideContent} key={type}>{type}</p>
-          )) : null
-        }
+              )) : null
+            }
+          </FormGroup>
+        </div>
     </div>
   );
 

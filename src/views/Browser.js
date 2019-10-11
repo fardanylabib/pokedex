@@ -9,10 +9,11 @@ import BottomScrollListener from 'react-bottom-scroll-listener';
 
 
 const MAX_COUNT = 200;
+const INITIAL_COUNT_FILTER = 150;
 const INITIAL_COUNT = 20;
 const STEP_COUNT = 20;
 
-var pokemonCount = INITIAL_COUNT;
+var pokemonCount = INITIAL_COUNT; //how many pokemon will be get from GraphQL
 var pokemonList = []; //container of pokemons
 var filter = []; //container of type-filter
 
@@ -81,22 +82,15 @@ const PokemonBrowser = () => {
                 }
                 var filteredData = [];
                 if(filter !== null && filter.length > 0){
-                    //apply filter to data.pokemons
-                    data.pokemons.map((pokemon)=>{
-                        filter.map((filterType) => {
-                            if(pokemon.type.indexOf(filterType) >= 0){
-                                if(filteredData.length === 0){
-                                    filteredData.push(pokemon);
-                                }else{
-                                    for(let i = 0 ;i<filteredData.length;i++){
-                                        if(filteredData[i].name !== pokemon.name){
-                                            filteredData.push(pokemon);
-                                        }
-                                    }
-                                }
-                            }
-                        })
-                    })
+                    //apply filter to data.pokemons using OR logic filter
+                    for(const pokemon of data.pokemons){
+                        var combineType = [...pokemon.types, ...filter];
+                        const firstLength = combineType.length;
+                        combineType = [...new Set(combineType)];
+                        if(combineType.length < firstLength){
+                            filteredData = [...filteredData, pokemon];
+                        }
+                    }
                 }else{
                     filteredData = data.pokemons;
                 }
@@ -122,6 +116,12 @@ class Browser extends React.Component{
             return;
         }
         filter = filterSet;
+        pokemonList = [];
+        if(filter.length == 0){
+            pokemonCount = INITIAL_COUNT;
+        }else{
+            pokemonCount = INITIAL_COUNT_FILTER;
+        }
         this.setState({isNewFilter:true});
     }
 
