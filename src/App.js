@@ -11,7 +11,7 @@ const client = new ApolloClient({
 });
 
 const App = () => (
-  <div>
+  <div className='App'>
     <Header/>
     <ApolloProvider client = {client}>
       <Container>

@@ -29,6 +29,7 @@ export default function AppHeader(props) {
         <AppBar>
           <Toolbar>
             <img alt='logo' src={logo} className = 'App-logo'/>
+            <h3 className='App-title'>POKEDEX | Gotta catch 'em all!</h3>
           </Toolbar>
         </AppBar>
       </HideOnScroll>

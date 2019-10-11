@@ -1,11 +1,13 @@
 .App {
-  text-align: center;
+  background-color: #e3eaff;
 }
 
 .App-logo {
   max-height: 40px;
-  display: block;
-  margin: auto;
+}
+
+.App-title{
+  margin-left: 20px;
 }
 
 .App-header {

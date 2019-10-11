@@ -87,7 +87,6 @@ function FilterSideBar(props) {
     </div>
   );
 
-  console.log('filter types = '+props.listFilter)
   return (
     <div>
         <Fab 

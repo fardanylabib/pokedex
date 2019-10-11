@@ -4,9 +4,11 @@ import FilterSideBar from '../components/SideBar';
 import Cards from '../components/Cards';
 import {Query} from 'react-apollo';
 import gql from 'graphql-tag'; 
+import InfiniteScroll from 'react-infinite-scroller';
+import BottomScrollListener from 'react-bottom-scroll-listener';
 
 
-const MAX_COUNT = 160;
+const MAX_COUNT = 180;
 const INITIAL_COUNT = 20;
 const STEP_COUNT = 20;
 
@@ -32,6 +34,7 @@ const PokemonFilter = (props) =>(
                     list = [...list, ...pokemon.types];
                 })
                 const typeList = [...(new Set(list))];
+                
                 return (
                     <FilterSideBar listFilter={typeList} handleFilter={props.handleFilter}/>
                 )
@@ -42,7 +45,12 @@ const PokemonFilter = (props) =>(
 
 const PokemonBrowser = (props) => {
     if(props.count >= MAX_COUNT){
-     
+        return (
+            <>
+                <Cards content = {props.pokemonList} />
+                <p>No more monsters...</p>
+            </>
+        )
     }
     return(
         <Query query = {gql`
@@ -55,14 +63,40 @@ const PokemonBrowser = (props) => {
             {
                 ({loading,error,data}) => {
                     if(loading){
-                        return <p>Loading...</p>
+                        return(
+                            <>
+                                <Cards content = {props.pokemonList} />
+                                <p>Loading...</p>
+                            </>
+                        )
                     }
                     if(error){
                         return <p>Error.. :(</p>
                     }
-                    console.log('pokemons = '+ JSON.stringify(data.pokemons));
+                    let filteredData = [];
+                    if(props.filter !== null && props.filter.length > 0){
+                        //apply filter to data.pokemons
+                        data.pokemons.map((pokemon)=>{
+                            props.filter.map((filterType) => {
+                                if(pokemon.type.indexOf(filterType) >= 0){
+                                    if(filteredData.length === 0){
+                                        filteredData.push(pokemon);
+                                    }else{
+                                        for(let i = 0 ;i<filteredData.length;i++){
+                                            if(filteredData[i].name !== pokemon.name){
+                                                filteredData.push(pokemon);
+                                            }
+                                        }
+                                    }
+                                }
+                            })
+                        })
+                    }else{
+                        filteredData = data.pokemons;
+                    }
+                    props.setPokemonList(filteredData);
                     return (
-                        <Cards content = {data.pokemons} />
+                        <Cards content = {filteredData} />
                     )
                 }
             }
@@ -70,13 +104,20 @@ const PokemonBrowser = (props) => {
     )
 }
 
+
 class Browser extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            filter:null,
+            //application state
+            filtersUpdated:false,
+            pokemonsUpdated:false,
+            isBottom:false,
+
+            //application data
+            filter:[],
             pokemonCount:INITIAL_COUNT,
-            pokemonList:null,
+            pokemonList:[],
         }
     }
 
@@ -85,36 +126,55 @@ class Browser extends React.Component{
     }
 
     handleAddList = () => {
+        console.log('add list');
+        this.setState({
+            pokemonCount: this.state.pokemonCount + STEP_COUNT, 
+            pokemonsUpdated: false,
+            isBottom:false
+        })
+    }
 
+    setPokemonList = (newList) => {
+        if(this.state.pokemonsUpdated){
+            return;
+        }
+        this.setState({pokemonList:newList, pokemonsUpdated:true});
     }
 
     componentDidMount(){
-        
+
+    }
+
+    componentDidUpdate(){
+
     }
 
     render(){
+        const {filtersLoaded,pokemonsLoaded,isBottom} = this.state;
         return(
             <div>
+                <PokemonFilter 
+                    filter = {this.state.filter}
+                    handleFilter = {this.handleFilter}
+                />
                 <Box my={2}>
-                    <PokemonBrowser count={this.state.pokemonCount}/>                  
+                    <InfiniteScroll
+                        pageStart={0}
+                        loadMore={this.handleAddList}
+                        hasMore={this.state.isBottom}
+                        // loader={<div className="text">Loading ...</div>}
+                    >
+                        <PokemonBrowser 
+                            count ={this.state.pokemonCount}
+                            pokemonList = {this.state.pokemonList}
+                            filter ={this.state.filter}
+                            setPokemonList = {this.setPokemonList}
+                        /> 
+                    </InfiniteScroll>                 
                 </Box>
-                
-                <PokemonFilter handleFilter = {this.handleFilter}/>
+                <BottomScrollListener onBottom={() => this.setState({isBottom:true})}/>
             </div>
         )
     }
 }
-/*
-<FormControlLabel
-control={
-<Checkbox
-    checked={state.checkedB}
-    onChange={handleChange('checkedB')}
-    value="checkedB"
-    color="primary"
-/>
-}
-label="Primary"
-/>
-*/
 export default Browser;
