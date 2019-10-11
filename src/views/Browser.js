@@ -8,10 +8,13 @@ import InfiniteScroll from 'react-infinite-scroller';
 import BottomScrollListener from 'react-bottom-scroll-listener';
 
 
-const MAX_COUNT = 180;
+const MAX_COUNT = 200;
 const INITIAL_COUNT = 20;
 const STEP_COUNT = 20;
 
+var pokemonCount = INITIAL_COUNT;
+var pokemonList = []; //container of pokemons
+var filter = []; //container of type-filter
 
 const PokemonFilter = (props) =>(
     <Query query = {gql`
@@ -24,16 +27,19 @@ const PokemonFilter = (props) =>(
         {
             ({loading,error,data}) => {
                 if(loading){
-                    return <p className = 'text-center'>Loading Filters...</p>
+                    return <p className = 'text-center'><br/>Loading Filters...</p>
                 }
                 if(error){
-                    return <p className = 'text-center'>Error.. :(</p>
+                    return <p className = 'text-center'><br/>Error.. :(</p>
                 }
-                var list=[];
+                var typeList=[];
                 data.pokemons.map((pokemon)=>{
-                    list = [...list, ...pokemon.types];
+                   pokemon.types.map((type) => {
+                       if(typeList.indexOf(type) == -1){
+                            typeList.push(type);
+                       }
+                   })
                 })
-                const typeList = [...(new Set(list))];
                 
                 return (
                     <FilterSideBar listFilter={typeList} handleFilter={props.handleFilter}/>
@@ -43,101 +49,93 @@ const PokemonFilter = (props) =>(
     </Query>
 )
 
-const PokemonBrowser = (props) => {
-    if(props.count >= MAX_COUNT){
+const PokemonBrowser = () => {
+    if(pokemonCount >= MAX_COUNT){
         return (
             <>
-                <Cards content = {props.pokemonList} />
-                <p className = 'text-center'>No more monsters...</p>
+                <Cards content = {pokemonList} />
+                <p className = 'text-center'><br/>No more monsters...</p>
             </>
         )
     }
     return(
         <Query query = {gql`
             {
-                pokemons(first:${props.count}) {
+                pokemons(first:${pokemonCount}) {
                     name,types,image
                 }
             }
         `}>
-            {
-                ({loading,error,data}) => {
-                    if(loading){
-                        return(
-                            <>
-                                <Cards content = {props.pokemonList} />
-                                <p className = 'text-center'>Loading Monsters...</p>
-                            </>
-                        )
-                    }
-                    if(error){
-                        return <p className = 'text-center'>Error.. :(</p>
-                    }
-                    let filteredData = [];
-                    if(props.filter !== null && props.filter.length > 0){
-                        //apply filter to data.pokemons
-                        data.pokemons.map((pokemon)=>{
-                            props.filter.map((filterType) => {
-                                if(pokemon.type.indexOf(filterType) >= 0){
-                                    if(filteredData.length === 0){
-                                        filteredData.push(pokemon);
-                                    }else{
-                                        for(let i = 0 ;i<filteredData.length;i++){
-                                            if(filteredData[i].name !== pokemon.name){
-                                                filteredData.push(pokemon);
-                                            }
+        {
+            ({loading,error,data}) => {
+                if(loading){
+                    return(
+                        <>
+                            <Cards content = {pokemonList} />
+                            <p className = 'text-center'><br/>Loading Monsters...</p>
+                        </>
+                    )
+                }
+                if(error){
+                    return <p className = 'text-center'><br/>Error.. :(</p>
+                }
+                var filteredData = [];
+                if(filter !== null && filter.length > 0){
+                    //apply filter to data.pokemons
+                    data.pokemons.map((pokemon)=>{
+                        filter.map((filterType) => {
+                            if(pokemon.type.indexOf(filterType) >= 0){
+                                if(filteredData.length === 0){
+                                    filteredData.push(pokemon);
+                                }else{
+                                    for(let i = 0 ;i<filteredData.length;i++){
+                                        if(filteredData[i].name !== pokemon.name){
+                                            filteredData.push(pokemon);
                                         }
                                     }
                                 }
-                            })
+                            }
                         })
-                    }else{
-                        filteredData = data.pokemons;
-                    }
-                    props.setPokemonList(filteredData);
-                    return (
-                        <Cards content = {filteredData} />
-                    )
+                    })
+                }else{
+                    filteredData = data.pokemons;
                 }
+                pokemonList = filteredData;
+                return (
+                    <Cards content = {pokemonList} />
+                )
             }
+        }
         </Query>
     )
 }
 
 
 class Browser extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            //application state
-            pokemonsUpdated:false,
-            isBottom:false,
-
-            //application data
-            filter:[],
-            pokemonCount:INITIAL_COUNT,
-            pokemonList:[],
-        }
+    state = {
+        isBottom: false,
+        isNewFilter: false,
     }
 
     handleFilter = (filterSet) => {
-        this.setState({filter:filterSet})
+        if(filter === filterSet){
+            return;
+        }
+        filter = filterSet;
+        this.setState({isNewFilter:true});
     }
 
     handleAddList = () => {
         console.log('add list');
-        this.setState({
-            pokemonCount: this.state.pokemonCount + STEP_COUNT, 
-            pokemonsUpdated: false,
-            isBottom:false
-        })
+        pokemonCount += STEP_COUNT;
+        this.setState({isBottom:false});
     }
 
-    setPokemonList = (newList) => {
-        if(this.state.pokemonsUpdated){
-            return;
-        }
-        this.setState({pokemonList:newList, pokemonsUpdated:true});
+    componentDidMount(){
+        this.setState({
+            isBottom:false,
+            isNewFilter: false,
+        })
     }
 
     render(){
@@ -146,22 +144,14 @@ class Browser extends React.Component{
                 <Box my={2}>
                     <InfiniteScroll
                         pageStart={0}
-                        loadMore={this.handleAddList}
                         hasMore={this.state.isBottom}
+                        loadMore={this.handleAddList}
                         // loader={<div className="text">Loading ...</div>}
                     >
-                        <PokemonBrowser 
-                            count ={this.state.pokemonCount}
-                            pokemonList = {this.state.pokemonList}
-                            filter ={this.state.filter}
-                            setPokemonList = {this.setPokemonList}
-                        /> 
+                        <PokemonBrowser/> 
                     </InfiniteScroll>                 
                 </Box>
-                <PokemonFilter 
-                    filter = {this.state.filter}
-                    handleFilter = {this.handleFilter}
-                />
+                <PokemonFilter handleFilter = {this.handleFilter}/>
                 <BottomScrollListener onBottom={() => this.setState({isBottom:true})}/>
             </div>
         )
