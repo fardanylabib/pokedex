@@ -19,12 +19,30 @@
   color: white;
 }
 
-.Filter {
-  position: fixed;
-  bottom: 20px;
-  right: 15px;
-}
-
 .App-link {
   color: #09d3ac;
+}
+
+.card {
+  min-width: 250px;
+  max-width: 270px;
+}
+
+.card-media{
+  height: 100px;
+  display: block;
+  margin: auto;
+}
+
+.chips{
+  margin:5px;
+}
+
+.text{
+  font-family: 'Montserrat';
+}
+
+.text-center{
+  font-family: 'Montserrat';
+  text-align: center;
 }
