@@ -7,7 +7,6 @@ import gql from 'graphql-tag';
 import InfiniteScroll from 'react-infinite-scroller';
 import BottomScrollListener from 'react-bottom-scroll-listener';
 
-
 const MAX_COUNT = 200;
 const INITIAL_COUNT_FILTER = 150;
 const INITIAL_COUNT = 20;
@@ -36,7 +35,7 @@ const PokemonFilter = (props) =>(
                 var typeList=[];
                 data.pokemons.map((pokemon)=>{
                    pokemon.types.map((type) => {
-                       if(typeList.indexOf(type) == -1){
+                       if(typeList.indexOf(type) === -1){
                             typeList.push(type);
                        }
                    })
@@ -115,7 +114,7 @@ class Browser extends React.Component{
         filter = filterSet;
         console.log('filter = '+filter);
         pokemonList = [];
-        if(filter.length == 0){
+        if(filter.length === 0){
             pokemonCount = INITIAL_COUNT;
         }else{
             pokemonCount = INITIAL_COUNT_FILTER;
@@ -144,7 +143,7 @@ class Browser extends React.Component{
                         pageStart={0}
                         hasMore={this.state.isBottom}
                         loadMore={this.handleAddList}
-                        // loader={<div className="text">Loading ...</div>}
+                        // loader={<div className='text'>Loading ...</div>}
                     >
                         <PokemonBrowser/> 
                     </InfiniteScroll>                 

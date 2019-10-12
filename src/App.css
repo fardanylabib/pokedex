@@ -18,7 +18,8 @@
 }
 
 .App-link {
-  color: #09d3ac;
+  color: black;
+  text-decoration: none;
 }
 
 .card {
@@ -32,6 +33,12 @@
   margin: auto;
 }
 
+.card-media-large{
+  height: 300px;
+  display: block;
+  margin: auto; 
+}
+
 .chips{
   margin:5px;
 }
@@ -43,4 +50,8 @@
 .text-center{
   font-family: 'Montserrat';
   text-align: center;
+}
+
+.text-right{
+  text-align: right;
 }

@@ -68,14 +68,14 @@ function FilterSideBar(props) {
       <br/><br/>
       <Divider />
         <div className = {classes.sideContent}>
-          <FormGroup aria-label="type-filter" name="types" value={state.filter} onChange={handleCheck}>        
+          <FormGroup aria-label='type-filter' name='types' value={state.filter} onChange={handleCheck}>        
             {
               types !== null || types !== undefined ?
               types.map((type)=>(
                 <FormControlLabel
                   key = {type}
                   value={type}
-                  control={<Checkbox color="primary" checked={state.filter.indexOf(type)>=0}/>}
+                  control={<Checkbox color='primary' checked={state.filter.indexOf(type)>=0}/>}
                   label={<span className='text'>{type}</span>}
                 />
               )) : null
