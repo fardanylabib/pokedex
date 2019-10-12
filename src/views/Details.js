@@ -13,7 +13,7 @@ import {useParams,Link} from 'react-router-dom';
 
 const MAX_ALLOWED_HP = 4500;
 const MAX_ALLOWED_CP = 4500;
-const MAX_ALLOWED_DMG = 140;
+const MAX_ALLOWED_DMG = 130;
 
 const useStyles = makeStyles({
     button:{
@@ -74,6 +74,7 @@ const PokemonDetail = (props) =>(
                 if(error){
                     return <p className = 'text-center'><br/>Error.. :(</p>
                 }
+                let evolutionCount = 1;
                 return (
                     <Grid container spacing={5} justify='space-evenly'>
                         <Grid item md={6} sm={12} xs={12}>
@@ -229,11 +230,15 @@ const PokemonDetail = (props) =>(
                             {
                                 data.pokemon.evolutions !== null ?
                                 data.pokemon.evolutions.map((evo)=>(
-                                    <Evolutions key={evo.id}/>
+                                    <Evolutions
+                                        key={evo.id} id={evo.id}
+                                        count={evolutionCount++}
+                                        requirements = {data.pokemon.evolutionRequirements}    
+                                    />
                                 ))
                                 :
-                                <p></p>
-                            }  
+                                <p className = 'text'>No higher evolution</p>
+                            } 
                         </Grid>
                     </Grid>
                 )
@@ -245,8 +250,8 @@ const PokemonDetail = (props) =>(
 const Evolutions = (props) =>(
     <Query query = {gql`
     {
-        pokemon(name:"${props.id}"){
-           name 
+        pokemon(id:"${props.id}"){
+           name, image 
         }
     }
     `}>
@@ -260,8 +265,14 @@ const Evolutions = (props) =>(
             }
             return(
                 <div>
-                    <img alt='evo-img' src={data.pokemon.image} className = 'card-media'/>
-                    <p className = 'text-center'><strong>{data.pokemon.name}</strong></p>
+                    <img alt='evo-img' src={data.pokemon.image} className = 'card-media-left'/>
+                    <p className = 'text'>
+                        { 
+                            props.count === 1? 
+                            `${props.count}. ${data.pokemon.name} (requires ${props.requirements.amount} ${props.requirements.name})`:
+                            `${props.count}. ${data.pokemon.name}`
+                        }
+                    </p>
                 </div>
             )
         }
