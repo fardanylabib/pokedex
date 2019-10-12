@@ -265,7 +265,9 @@ const Evolutions = (props) =>(
             }
             return(
                 <div>
-                    <img alt='evo-img' src={data.pokemon.image} className = 'card-media-left'/>
+                    <Link to = {`/pokemon/${data.pokemon.name}`}>
+                        <img alt='evo-img' src={data.pokemon.image} className = 'card-media-left'/>
+                    </Link>
                     <p className = 'text'>
                         { 
                             props.count === 1? 
