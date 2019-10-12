@@ -11,8 +11,9 @@ import {Query} from 'react-apollo';
 import gql from 'graphql-tag'; 
 import {useParams,Link} from 'react-router-dom';
 
-const MAX_ALLOWED_HP = 4000;
-const MAX_ALLOWED_CP = 4000;
+const MAX_ALLOWED_HP = 4500;
+const MAX_ALLOWED_CP = 4500;
+const MAX_ALLOWED_DMG = 140;
 
 const useStyles = makeStyles({
     button:{
@@ -77,7 +78,7 @@ const PokemonDetail = (props) =>(
                     <Grid container spacing={5} justify='space-evenly'>
                         <Grid item md={6} sm={12} xs={12}>
                             <img alt='pokemon-img' src={data.pokemon.image} className = 'card-media-large'/>
-                            <h2 className = 'text-center'>{data.pokemon.name}</h2>
+                            <h1 className = 'text-center'>{data.pokemon.name}</h1>
                             <p className = 'text-center'>{`(${data.pokemon.classification})`}</p>
                             <Divider/>
                             <br/>
@@ -130,24 +131,141 @@ const PokemonDetail = (props) =>(
                             </table>
                         </Grid>
                         <Grid item md={6} sm={12} xs={12}>
-                            <h3 className='text'>More Details</h3>
-                            <table width='100%'>
+                            <h2 className='text'>MORE DETAILS</h2>
+                            <table width='100%' id='table'>
+                                <thead><h3 className='text'>DIMENSION</h3></thead>
                                 <tbody>
-                                <tr>
-                                    <td className='text'><strong>Weight</strong></td>
-                                    <td className='text-right'>{`${data.pokemon.weight.minimum} - ${data.pokemon.weight.maximum}`}</td>
-                                </tr>
-                                <tr>
-                                    <td className='text'><strong>Height</strong></td>
-                                    <td className='text-right'>{`${data.pokemon.height.minimum} - ${data.pokemon.height.maximum}`}</td>
-                                 </tr>
-                                 </tbody>
+                                    <tr>
+                                        <td className='text'>Weight</td>
+                                        <td className='text-right'>{`${data.pokemon.weight.minimum} - ${data.pokemon.weight.maximum}`}</td>
+                                    </tr>
+                                    <tr>
+                                        <td className='text'>Height</td>
+                                        <td className='text-right'>{`${data.pokemon.height.minimum} - ${data.pokemon.height.maximum}`}</td>
+                                    </tr>
+                                </tbody>
                             </table>
+                            <Divider/>
+                            <table width='100%' id='table'>
+                                <thead><h3 className='text'>NATURE</h3></thead>
+                                <tbody>
+                                    <tr>
+                                        <td className='text'>Resistant</td>
+                                        <td className='text-right'>
+                                            {
+                                                data.pokemon.resistant.map((type)=>(
+                                                    <Chip key = {type} 
+                                                        label = {<span className = 'text'>{type}</span>}
+                                                        variant='outlined'
+                                                        color='primary'
+                                                        className = 'chips'
+                                                    />
+                                                ))
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td className='text'>Weaknesses</td>
+                                        <td className='text-right'>
+                                            {
+                                                data.pokemon.weaknesses.map((type)=>(
+                                                    <Chip key = {type} 
+                                                        label = {<span className = 'text'>{type}</span>}
+                                                        variant='outlined'
+                                                        color='secondary'
+                                                        className = 'chips'
+                                                    />
+                                                ))
+                                            }
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <Divider/>
+                            <table width='100%' id='table'>
+                                <thead><h3 className='text'>ABILITY</h3></thead>
+                                <tbody>
+                                    <tr>
+                                        <td className='text'><strong>Fast Attacks Damage</strong></td>
+                                    </tr>
+                                    {
+                                        data.pokemon.attacks.fast.map((attacks)=>(
+                                            <tr key={attacks.name}>
+                                                <td className = 'text'>{`- ${attacks.name} (${attacks.type})`}</td>
+                                                <td className = 'large-column'>
+                                                    <a className = 'text'>{attacks.damage}</a>
+                                                    <LinearProgress color='primary' variant='determinate' 
+                                                        value={attacks.damage/MAX_ALLOWED_DMG*100}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
+                                    <tr>
+                                        <td className='text'><br/><strong>Special Attacks Damage</strong></td>
+                                    </tr>
+                                    {
+                                        data.pokemon.attacks.special.map((attacks)=>(
+                                            <tr key={attacks.name}>
+                                                <td className = 'text'>{`- ${attacks.name} (${attacks.type})`}</td>
+                                                <td className = 'large-column'>
+                                                    <a className = 'text'>{attacks.damage}</a>
+                                                    <LinearProgress color='primary' variant='determinate' 
+                                                        value={attacks.damage/MAX_ALLOWED_DMG*100}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
+                                    <tr>
+                                        <td className='text'><br/><strong>Flee Rate</strong></td>
+                                        <td className='text'><br/>{data.pokemon.fleeRate}</td>
+                                        
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <Divider/>
+                            <h3 className='text'>EVOLUTIONS</h3>
+                            {
+                                data.pokemon.evolutions !== null ?
+                                data.pokemon.evolutions.map((evo)=>(
+                                    <Evolutions key={evo.id}/>
+                                ))
+                                :
+                                <p></p>
+                            }  
                         </Grid>
                     </Grid>
                 )
             }
         }
+    </Query>
+)
+
+const Evolutions = (props) =>(
+    <Query query = {gql`
+    {
+        pokemon(name:"${props.id}"){
+           name 
+        }
+    }
+    `}>
+     {
+        ({loading,error,data})=> {
+            if(loading){
+                return <p className = 'text-center'><br/>Loading Monster...</p>
+            }
+            if(error){
+                return <p className = 'text-center'><br/>Error.. :(</p>
+            }
+            return(
+                <div>
+                    <img alt='evo-img' src={data.pokemon.image} className = 'card-media'/>
+                    <p className = 'text-center'><strong>{data.pokemon.name}</strong></p>
+                </div>
+            )
+        }
+     }   
     </Query>
 )
 

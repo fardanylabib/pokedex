@@ -55,3 +55,11 @@
 .text-right{
   text-align: right;
 }
+
+#table{
+  border-collapse: separate; 
+}
+
+.large-column{
+  min-width: 250px;
+}
